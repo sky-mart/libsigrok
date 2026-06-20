@@ -25,24 +25,34 @@
 static const struct dslogic_profile supported_device[] = {
 	/* DreamSourceLab DSLogic */
 	{ 0x2a0e, 0x0001, "DreamSourceLab", "DSLogic", NULL,
-		"dreamsourcelab-dslogic-fx2.fw",
-		0, "DreamSourceLab", "DSLogic", 256 * 1024 * 1024},
+		"dreamsourcelab-dslogic-fx2.fw", NULL,
+		0, "DreamSourceLab", "DSLogic", 256 * 1024 * 1024,
+		DSLOGIC_PROTOCOL_V1},
 	/* DreamSourceLab DSCope */
 	{ 0x2a0e, 0x0002, "DreamSourceLab", "DSCope", NULL,
-		"dreamsourcelab-dscope-fx2.fw",
-		0, "DreamSourceLab", "DSCope", 256 * 1024 * 1024},
+		"dreamsourcelab-dscope-fx2.fw", NULL,
+		0, "DreamSourceLab", "DSCope", 256 * 1024 * 1024,
+		DSLOGIC_PROTOCOL_V1},
 	/* DreamSourceLab DSLogic Pro */
 	{ 0x2a0e, 0x0003, "DreamSourceLab", "DSLogic Pro", NULL,
-		"dreamsourcelab-dslogic-pro-fx2.fw",
-		0, "DreamSourceLab", "DSLogic", 256 * 1024 * 1024},
+		"dreamsourcelab-dslogic-pro-fx2.fw", NULL,
+		0, "DreamSourceLab", "DSLogic", 256 * 1024 * 1024,
+		DSLOGIC_PROTOCOL_V1},
 	/* DreamSourceLab DSLogic Plus */
 	{ 0x2a0e, 0x0020, "DreamSourceLab", "DSLogic Plus", NULL,
-		"dreamsourcelab-dslogic-plus-fx2.fw",
-		0, "DreamSourceLab", "DSLogic", 256 * 1024 * 1024},
+		"dreamsourcelab-dslogic-plus-fx2.fw", NULL,
+		0, "DreamSourceLab", "DSLogic", 256 * 1024 * 1024,
+		DSLOGIC_PROTOCOL_V1},
 	/* DreamSourceLab DSLogic Basic */
 	{ 0x2a0e, 0x0021, "DreamSourceLab", "DSLogic Basic", NULL,
-		"dreamsourcelab-dslogic-basic-fx2.fw",
-		0, "DreamSourceLab", "DSLogic", 256 * 1024},
+		"dreamsourcelab-dslogic-basic-fx2.fw", NULL,
+		0, "DreamSourceLab", "DSLogic", 256 * 1024,
+		DSLOGIC_PROTOCOL_V1},
+	/* DreamSourceLab DSLogic Plus v2 (PGL12 revision). */
+	{ 0x2a0e, 0x0034, "DreamSourceLab", "DSLogic Plus", "v2",
+		"DSLogicPlus-pgl12-2.fw", DSLOGIC_PLUS_V2_FPGA_FIRMWARE,
+		0, "DreamSourceLab", "USB-based DSL Instrument v2",
+		256 * 1024 * 1024, DSLOGIC_PROTOCOL_V2},
 
 	ALL_ZERO
 };
@@ -255,7 +265,12 @@ static GSList *scan(struct sr_dev_driver *di, GSList *options)
 
 		devc->samplerates = samplerates;
 		devc->num_samplerates = ARRAY_SIZE(samplerates);
-		has_firmware = usb_match_manuf_prod(devlist[i], "DreamSourceLab", "USB-based Instrument");
+		if (prof->protocol == DSLOGIC_PROTOCOL_V2)
+			has_firmware = !strcmp(manufacturer, prof->usb_manufacturer) &&
+					!strcmp(product, prof->usb_product);
+		else
+			has_firmware = usb_match_manuf_prod(devlist[i],
+					"DreamSourceLab", "USB-based Instrument");
 
 		if (has_firmware) {
 			/* Already has the firmware, so fix the new address. */
@@ -265,8 +280,8 @@ static GSList *scan(struct sr_dev_driver *di, GSList *options)
 			sdi->conn = sr_usb_dev_inst_new(libusb_get_bus_number(devlist[i]),
 					libusb_get_device_address(devlist[i]), NULL);
 		} else {
-			if (ezusb_upload_firmware(drvc->sr_ctx, devlist[i],
-					USB_CONFIGURATION, prof->firmware) == SR_OK) {
+			if (prof->firmware && ezusb_upload_firmware(drvc->sr_ctx,
+					devlist[i], USB_CONFIGURATION, prof->firmware) == SR_OK) {
 				/* Store when this device's FW was updated. */
 				devc->fw_updated = g_get_monotonic_time();
 			} else {

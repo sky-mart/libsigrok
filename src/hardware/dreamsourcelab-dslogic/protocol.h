@@ -42,6 +42,7 @@
 #define NUM_TRIGGER_STAGES	16
 
 #define DSLOGIC_REQUIRED_VERSION_MAJOR	1
+#define DSLOGIC_V2_REQUIRED_VERSION_MAJOR	2
 
 /* 6 delay states of up to 256 clock ticks */
 #define MAX_SAMPLE_DELAY	(6 * 256)
@@ -52,6 +53,12 @@
 #define DSLOGIC_PRO_FPGA_FIRMWARE "dreamsourcelab-dslogic-pro-fpga.fw"
 #define DSLOGIC_PLUS_FPGA_FIRMWARE "dreamsourcelab-dslogic-plus-fpga.fw"
 #define DSLOGIC_BASIC_FPGA_FIRMWARE "dreamsourcelab-dslogic-basic-fpga.fw"
+#define DSLOGIC_PLUS_V2_FPGA_FIRMWARE "DSLogicPlus-pgl12-2.bin"
+
+enum dslogic_protocol {
+	DSLOGIC_PROTOCOL_V1,
+	DSLOGIC_PROTOCOL_V2,
+};
 
 enum dslogic_operation_modes {
 	DS_OP_NORMAL,
@@ -95,6 +102,7 @@ struct dslogic_profile {
 	const char *model_version;
 
 	const char *firmware;
+	const char *fpga_firmware;
 
 	uint32_t dev_caps;
 
@@ -103,6 +111,8 @@ struct dslogic_profile {
 
 	/* Memory depth in bits. */
 	uint64_t mem_depth;
+
+	enum dslogic_protocol protocol;
 };
 
 struct dev_context {

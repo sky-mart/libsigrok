@@ -47,7 +47,9 @@ The following drivers/devices require a firmware upload upon connection:
  - dreamsourcelab-dslogic: The DreamSourceLab DSLogic/DSCope device series
    requires various firmware files and FPGA bitstream files.
    These can be extracted/downloaded from the vendor's GitHub repo using a
-   tool from our 'sigrok-util' repository/project.
+   tool from our 'sigrok-util' repository/project. The DSLogic Plus v2
+   (USB ID 2a0e:0034) also needs the vendor bitstream file
+   'DSLogicPlus-pgl12-2.bin' in one of the firmware search paths.
 
  - fx2lafw: Logic analyzers based on the Cypress FX2(LP) chip need the
    firmware files from the 'sigrok-firmware-fx2lafw' repository/project.
